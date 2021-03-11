@@ -1,0 +1,7 @@
+{
+  "name": "opkas",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue"
+}
