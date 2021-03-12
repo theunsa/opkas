@@ -11,6 +11,7 @@
         </ion-toolbar>
       </ion-header>
       <h1>{{ today.toDateString() }}</h1>
+      {{ entries }}
       <ion-list v-for="entry in entries" :key="entry.dateTime">
         <ion-item-sliding>
           <ion-item lines="none">
@@ -23,15 +24,15 @@
                   <ion-label>{{ entry.dateTime }}</ion-label>
                 </ion-col>
               </ion-row>
-              <ion-row class="entry-botom-row">
+              <ion-row class="entry-bottom-row">
                 <ion-col>
-                  <ion-label>{{ entry.turnover }}</ion-label>
+                  <ion-label>{{ entry.totalProfit }}</ion-label>
                 </ion-col>
               </ion-row>
             </ion-grid>
           </ion-item>
           <ion-item-options side="end">
-            <ion-item-option class="remove-icon" @click="unread(item)">
+            <ion-item-option class="remove-icon" @click="removeEntry(entry.dateTime)">
               <ion-icon slot="icon-only" size="large" :icon="removeCircleIcon"></ion-icon>
             </ion-item-option>
           </ion-item-options>
@@ -57,7 +58,7 @@
   </ion-page>
 </template>
 
-<script lang="ts">
+<script>
 import {
   IonContent,
   IonHeader,
@@ -79,11 +80,12 @@ import {
   IonButton,
   IonFooter,
   IonIcon,
-  IonImg,
 } from '@ionic/vue';
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, onMounted } from 'vue';
 import { add as addIcon, removeCircleOutline as removeCircleIcon } from 'ionicons/icons';
 import Modal from './Modal.vue';
+import { Plugins } from '@capacitor/core';
+const { Storage } = Plugins;
 
 const VERSION = '0.0.1';
 
@@ -117,11 +119,8 @@ export default defineComponent({
     const isOpenRef = ref(false);
     const data = { content: 'New Content' };
 
-    const setOpen = (state: boolean) => (isOpenRef.value = state);
-    const entries = [
-      { tillName: 'Piet Sin', turnover: 4000, dateTime: Date.now() },
-      { tillName: 'Koos Sin', turnover: 6400, dateTime: Date.now() },
-    ];
+    const setOpen = (state) => (isOpenRef.value = state);
+    const entries = ref([]);
 
     function closeTheDay() {
       console.log('in closeTheDay');
@@ -131,6 +130,31 @@ export default defineComponent({
       alert(`Opkas version ${VERSION}`);
     }
 
+    onMounted(async () => {
+      try {
+        const { keys } = await Storage.keys();
+        keys.forEach(async (entryKey) => {
+          const { value } = await Storage.get({ key: entryKey });
+          if (!value) {
+            return;
+          }
+          entries.value.push(JSON.parse(value));
+        });
+      } catch (err) {
+        alert(`Error: ${err}`);
+      }
+    });
+
+    async function removeEntry(entryId) {
+      try {
+        console.log(entryId);
+        await Storage.remove({ key: `opkas#${entryId}` });
+        delete entries.value[entryId];
+      } catch (err) {
+        alert(`Error: ${err}`);
+      }
+    }
+
     return {
       today,
       entries,
@@ -138,6 +162,7 @@ export default defineComponent({
       isOpenRef,
       setOpen,
       showVersion,
+      removeEntry,
       addIcon,
       removeCircleIcon,
       closeTheDay,
@@ -176,8 +201,14 @@ ion-footer {
 img {
   max-width: 100%;
   max-height: 100%;
+  /* display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%; */
 }
 .remove-icon {
   --background: var(--ion-color-danger);
 }
 </style>
+
+TODO: entries does not claer TODO: close day button at end is in the way of last item

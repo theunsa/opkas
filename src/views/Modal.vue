@@ -12,26 +12,31 @@
     </ion-item-divider>
     <ion-item lines="inset">
       <ion-label position="floating">Till Name</ion-label>
-      <ion-input v-model="tillName"></ion-input>
+      <ion-input v-model="tillData.tillName"></ion-input>
     </ion-item>
-    <ion-list v-for="propName in Object.keys(tillCash)" :key="propName">
+    <ion-list v-for="propName in Object.keys(tillData.cash)" :key="propName">
       <ion-item lines="none">
         <ion-label class="prop-label">{{ propName }}</ion-label>
         <ion-label> x &nbsp;&nbsp; </ion-label>
         <ion-input
           class="prop-input"
           placeholder="0"
-          v-model="tillCash[propName]"
+          v-model.number="tillData.cash[propName]"
           type="number"
         ></ion-input>
         <ion-label> &nbsp;&nbsp; = &nbsp;&nbsp; </ion-label>
-        <ion-label> R {{ tillCash[propName] * parseInt(propName.slice(1)) }} </ion-label>
+        <ion-label> R {{ tillData.cash[propName] * parseInt(propName.slice(1)) }} </ion-label>
       </ion-item>
     </ion-list>
     <ion-item lines="none">
       <ion-label class="credit-card-label">Float</ion-label>
       R
-      <ion-input class="other-input" placeholder="0" v-model="tillFloat" type="number"></ion-input>
+      <ion-input
+        class="other-input"
+        placeholder="0"
+        v-model.number="tillData.float"
+        type="number"
+      ></ion-input>
     </ion-item>
     <ion-item lines="none">
       <ion-label class="credit-card-label">Credit Card</ion-label>
@@ -39,11 +44,10 @@
       <ion-input
         class="other-input"
         placeholder="0"
-        v-model="tillCreditCard"
+        v-model.number="tillData.creditCard"
         type="number"
       ></ion-input>
     </ion-item>
-    {{ tillDataObj }}
     <ion-item-divider class="cash-totals" color="light">
       <ion-grid>
         <ion-row>
@@ -95,7 +99,7 @@ export default defineComponent({
     IonItem,
     IonItemDivider,
   },
-  setup() {
+  setup(props) {
     const tillDataObj = {
       tillName: '',
       creditCard: 0,
@@ -103,52 +107,47 @@ export default defineComponent({
       cash: { R200: 0, R100: 0, R50: 0, R20: 0, R10: 0, R5: 0, R2: 0, R1: 0 },
     };
 
-    const tillName = ref(tillDataObj.tillName);
-    const tillCash = ref(tillDataObj.cash);
-    const tillCreditCard = ref(tillDataObj.creditCard);
-    const tillFloat = ref(tillDataObj.float);
+    const tillData = ref(tillDataObj);
 
     const getTillCashTotal = computed(() => {
       let sum = 0;
-      Object.entries(tillCash.value).forEach(([name, amount]) => {
+      Object.entries(tillData.value.cash).forEach(([name, amount]) => {
         sum += amount * parseInt(name.slice(1));
       });
       return sum;
     });
     const getTillCashProfit = computed(() => {
-      return parseInt(getTillCashTotal.value) - parseInt(tillFloat.value);
+      return parseInt(getTillCashTotal.value) - parseInt(tillData.value.float);
     });
     const getTillTotalProfit = computed(() => {
-      return parseInt(getTillCashProfit.value) + parseInt(tillCreditCard.value);
+      return parseInt(getTillCashProfit.value) + parseInt(tillData.value.creditCard);
     });
 
     async function handleSubmit() {
       try {
         console.log('in handleSumbit');
-        if (tillName.value === '') {
+        if (tillData.value.tillName === '') {
           alert('Till Name field cannot be empty');
           return;
         }
         const d = new Date();
         tillData.value.dateTime = d.toISOString();
-        tillDataObj.tillCashTotal = getTillCashTotal.value;
-        tillDataObj.tillCashProfit = getTillCashProfit.value;
-        tillDataObj.tillTotalProfit = getTillTotalProfit.value;
+        tillDataObj.cashTotal = getTillCashTotal.value;
+        tillDataObj.cashProfit = getTillCashProfit.value;
+        tillDataObj.totalProfit = getTillTotalProfit.value;
         await Storage.set({
           key: `opkas#${tillDataObj.dateTime}`,
           value: JSON.stringify(tillDataObj),
         });
+        // finally close the modal
+        props.modalSetOpenFunction(false);
       } catch (err) {
         alert(`Error: ${err}`);
       }
     }
 
     return {
-      tillDataObj,
-      tillCash,
-      tillCreditCard,
-      tillFloat,
-      tillName,
+      tillData,
       getTillCashTotal,
       getTillCashProfit,
       getTillTotalProfit,
