@@ -1,10 +1,7 @@
 <template>
   <ion-page>
     <ion-header :translucent="true">
-      <ion-toolbar color="primary">
-        <ion-title>Opkas</ion-title>
-        <ion-label class="version" slot="end">v0.1</ion-label>
-      </ion-toolbar>
+      <img src="assets/logo.png" @click="showVersion" />
     </ion-header>
 
     <ion-content :fullscreen="true">
@@ -35,7 +32,7 @@
           </ion-item>
           <ion-item-options side="end">
             <ion-item-option class="remove-icon" @click="unread(item)">
-              <ion-icon slot="icon-only" :icon="removeCircleIcon"></ion-icon>
+              <ion-icon slot="icon-only" size="large" :icon="removeCircleIcon"></ion-icon>
             </ion-item-option>
           </ion-item-options>
         </ion-item-sliding>
@@ -43,7 +40,7 @@
 
       <!-- Fab button -->
       <ion-fab vertical="top" horizontal="end" slot="fixed">
-        <ion-fab-button color="secondary" @click="setOpen(true)">
+        <ion-fab-button color="primary" @click="setOpen(true)">
           <ion-icon size="large" :icon="addIcon"></ion-icon>
         </ion-fab-button>
       </ion-fab>
@@ -52,7 +49,6 @@
       <ion-modal :is-open="isOpenRef" @onDidDismiss="setOpen(false)">
         <Modal :modalSetOpenFunction="setOpen"></Modal>
       </ion-modal>
-      <ion-button @click="test">test</ion-button>
     </ion-content>
 
     <ion-footer>
@@ -62,10 +58,34 @@
 </template>
 
 <script lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonModal } from '@ionic/vue';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonModal,
+  IonLabel,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonItem,
+  IonFab,
+  IonFabButton,
+  IonList,
+  IonItemOption,
+  IonItemOptions,
+  IonItemSliding,
+  IonButton,
+  IonFooter,
+  IonIcon,
+  IonImg,
+} from '@ionic/vue';
 import { defineComponent, ref } from 'vue';
 import { add as addIcon, removeCircleOutline as removeCircleIcon } from 'ionicons/icons';
 import Modal from './Modal.vue';
+
+const VERSION = '0.0.1';
 
 export default defineComponent({
   name: 'Home',
@@ -76,12 +96,21 @@ export default defineComponent({
     IonTitle,
     IonToolbar,
     IonModal,
+    IonLabel,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonItem,
+    IonFab,
+    IonFabButton,
+    IonList,
+    IonItemOption,
+    IonItemOptions,
+    IonItemSliding,
+    IonButton,
+    IonIcon,
+    IonFooter,
     Modal,
-  },
-  methods: {
-    test() {
-      console.log(this.$refs);
-    },
   },
   setup() {
     const today = new Date();
@@ -98,12 +127,17 @@ export default defineComponent({
       console.log('in closeTheDay');
     }
 
+    function showVersion() {
+      alert(`Opkas version ${VERSION}`);
+    }
+
     return {
       today,
       entries,
       data,
       isOpenRef,
       setOpen,
+      showVersion,
       addIcon,
       removeCircleIcon,
       closeTheDay,
@@ -139,8 +173,11 @@ ion-footer {
   font-size: 1.1em;
   font-weight: bold;
 }
-.version {
-  padding-right: 10px;
-  font-size: 0.7em;
+img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.remove-icon {
+  --background: var(--ion-color-danger);
 }
 </style>
