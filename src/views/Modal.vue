@@ -87,6 +87,7 @@ export default defineComponent({
   props: {
     modalSetOpenFunction: { type: Function },
   },
+  emits: ['entryAdded'],
   components: {
     IonContent,
     IonHeader,
@@ -99,7 +100,7 @@ export default defineComponent({
     IonItem,
     IonItemDivider,
   },
-  setup(props) {
+  setup(props, context) {
     const tillDataObj = {
       tillName: '',
       creditCard: 0,
@@ -139,6 +140,7 @@ export default defineComponent({
           key: `opkas#${tillDataObj.dateTime}`,
           value: JSON.stringify(tillDataObj),
         });
+        context.emit('entryAdded', tillDataObj);
         // finally close the modal
         props.modalSetOpenFunction(false);
       } catch (err) {

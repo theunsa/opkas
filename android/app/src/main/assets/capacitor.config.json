@@ -3,6 +3,7 @@
   "appName": "opkas",
   "bundledWebRuntime": false,
   "npmClient": "npm",
+  "linuxAndroidStudioPath": "/home/theuns/Applications/android-studio/bin/studio.sh",
   "webDir": "dist",
   "plugins": {
     "SplashScreen": {
