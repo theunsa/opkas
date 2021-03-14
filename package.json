@@ -13,10 +13,13 @@
   "dependencies": {
     "@capacitor/android": "^2.4.7",
     "@capacitor/core": "2.4.7",
+    "@ionic-native/social-sharing": "^5.31.1",
     "@ionic/vue": "^5.4.0",
     "@ionic/vue-router": "^5.4.0",
     "capacitor-resources": "^2.0.5",
+    "cordova-plugin-x-socialsharing": "^6.0.3",
     "core-js": "^3.6.5",
+    "es6-promise-plugin": "^4.2.2",
     "pdfmake": "^0.1.70",
     "vue": "^3.0.0-0",
     "vue-router": "^4.0.0-0"

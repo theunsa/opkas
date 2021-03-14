@@ -10,6 +10,8 @@
           <img src="assets/logo.png" @click="showVersion" />
         </ion-toolbar>
       </ion-header>
+      <ion-loading :is-open="isBusyWithPdfReport" message="Busy writing report..." :duration="30">
+      </ion-loading>
       <h1>{{ today.toDateString() }}</h1>
       <ion-list v-for="entry in entries" :key="entry.dateTime">
         <ion-item-sliding :id="'slider#' + entry.dateTime">
@@ -77,6 +79,7 @@ import {
   IonItemOptions,
   IonItemSliding,
   IonIcon,
+  IonLoading,
   isPlatform,
   getPlatforms,
 } from '@ionic/vue';
@@ -113,6 +116,7 @@ export default defineComponent({
     IonItemOption,
     IonItemOptions,
     IonItemSliding,
+    IonLoading,
     IonIcon,
     Modal,
   },
@@ -123,6 +127,7 @@ export default defineComponent({
 
     const setOpen = (state) => (isOpenRef.value = state);
     const entries = ref([]);
+    const isBusyWithPdfReport = ref(false);
 
     function showVersion() {
       console.log(`Platforms: ${getPlatforms()}`);
@@ -160,6 +165,7 @@ export default defineComponent({
         alert(`Error: ${err}`);
       }
     }
+
     onMounted(async () => {
       await _loadTillEntries();
       // Sort till entries
@@ -196,7 +202,27 @@ export default defineComponent({
       alert(JSON.stringify(entry, null, 2));
     }
 
-    async function makePdf(content) {
+    function _showSocialSharingSheet(pdfFile) {
+      const options = {
+        message: 'Share this report', // not supported on some apps (Facebook, Instagram)
+        subject: `Opkas Report for ${today.toDateString()}`,
+        files: [pdfFile], // an array of filenames either locally or remotely
+        chooserTitle: 'Pick an app', // Android only, you can override the default share sheet title
+      };
+
+      const onSuccess = function(result) {
+        console.log('Share completed? ' + result.completed); // On Android apps mostly return false even while it's true
+        console.log('Shared to app: ' + result.app); // On Android result.app since plugin version 5.4.0 this is no longer empty. On iOS it's empty when sharing is cancelled (result.completed=false)
+      };
+
+      const onError = function(msg) {
+        console.log('Sharing failed with message: ' + msg);
+      };
+
+      window.plugins.socialsharing.shareWithOptions(options, onSuccess, onError);
+    }
+
+    function makePdf(content) {
       pdfmake.vfs = pdfFonts.pdfMake.vfs;
       const docDefinition = {
         content: content,
@@ -214,16 +240,23 @@ export default defineComponent({
         pageSize: 'A4',
         pageOrientation: 'portrait',
       };
-      const pdfFileName = `Opkas Report - ${_getDateTimeStringNow()}`;
+      const pdfFileName = `Opkas Report - ${_getDateTimeStringNow()}.pdf`;
       if (isPlatform('capacitor')) {
         pdfmake.createPdf(docDefinition).getBase64(async (data) => {
           const path = `Opkas/${pdfFileName}`;
-          await Filesystem.writeFile({
+          Filesystem.writeFile({
             path,
             data,
             directory: FilesystemDirectory.Documents,
             recursive: true,
-          });
+          })
+            .then((result) => {
+              console.log(`Write file result:${JSON.stringify(result, null, 2)}`);
+              _showSocialSharingSheet(result.uri);
+            })
+            .catch((err) => {
+              throw err;
+            });
         });
       } else {
         pdfmake.createPdf(docDefinition).download();
@@ -231,11 +264,14 @@ export default defineComponent({
     }
 
     function closeTheDay() {
+      if (entries.value.length === 0) return;
       const result = confirm(
         'Are you sure you want to close the day? This action will generate a pdf report and remove all till entries for the day.'
       );
       try {
-        if (result && entries.value.length > 0) {
+        if (result) {
+          //TODO: this busy flag is not working, need to be async, currently locked in this sync method
+          isBusyWithPdfReport.value = true;
           const content = [];
           let totalProfitForDay = 0;
           content.push({ text: `Opkas Report for ${today.toDateString()}`, style: 'header' });
@@ -262,6 +298,8 @@ export default defineComponent({
         }
       } catch (err) {
         alert(`Error: ${err}`);
+      } finally {
+        isBusyWithPdfReport.value = false;
       }
     }
 
@@ -270,6 +308,7 @@ export default defineComponent({
       entries,
       data,
       isOpenRef,
+      isBusyWithPdfReport,
       setOpen,
       showVersion,
       removeEntry,
