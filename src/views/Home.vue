@@ -95,7 +95,7 @@ const { Storage, Filesystem } = Plugins;
 import * as pdfmake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 
-const VERSION = '0.0.1';
+const VERSION = '0.0.2';
 
 export default defineComponent({
   name: 'Home',
