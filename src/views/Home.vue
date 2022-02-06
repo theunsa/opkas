@@ -273,6 +273,8 @@ export default defineComponent({
           //TODO: this busy flag is not working, need to be async, currently locked in this sync method
           isBusyWithPdfReport.value = true;
           const content = [];
+          let totalCashProfitForDay = 0;
+          let totalCreditCardProfitForDay = 0;
           let totalProfitForDay = 0;
           content.push({ text: `Opkas Report for ${today.toDateString()}`, style: 'header' });
           entries.value.forEach((tillEntry) => {
@@ -283,11 +285,21 @@ export default defineComponent({
               style: 'subHeader',
             });
             content.push({ text: JSON.stringify(tillEntry, null, 4) });
+            totalCashProfitForDay += tillEntry.cashProfit;
+            totalCreditCardProfitForDay += tillEntry.creditCard;
             totalProfitForDay += tillEntry.totalProfit;
           });
           // add total profit line as 2nd item in content array
           content.splice(1, 0, {
-            text: `Total profit for the day = R ${totalProfitForDay}`,
+            text: `Total profit = R ${totalProfitForDay}`,
+            style: 'subHeader',
+          });
+          content.splice(1, 0, {
+            text: `Total Cash profit = R ${totalCashProfitForDay}`,
+            style: 'subHeader',
+          });
+          content.splice(1, 0, {
+            text: `Total Credit Card profit = R ${totalCreditCardProfitForDay}`,
             style: 'subHeader',
           });
           makePdf(content);
