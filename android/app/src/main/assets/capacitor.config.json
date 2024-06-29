@@ -1,14 +1,13 @@
 {
-  "appId": "com.albertec.opkas",
-  "appName": "opkas",
-  "bundledWebRuntime": false,
-  "npmClient": "npm",
-  "linuxAndroidStudioPath": "/home/theuns/Applications/android-studio/bin/studio.sh",
-  "webDir": "dist",
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 0
-    }
-  },
-  "cordova": {}
+	"appId": "com.albertec.opkas",
+	"appName": "opkas",
+	"webDir": "dist",
+	"plugins": {
+		"SplashScreen": {
+			"launchShowDuration": 0
+		},
+		"Filesystem": {
+			"androidScoped": true
+		}
+	}
 }
